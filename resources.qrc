@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/imgs">
+        <file>copy.svg</file>
+        <file>delete.svg</file>
+        <file>floppy-disk.svg</file>
+        <file>new.svg</file>
+        <file>open.svg</file>
+        <file>paste.svg</file>
+        <file>scissors.svg</file>
+    </qresource>
+</RCC>
