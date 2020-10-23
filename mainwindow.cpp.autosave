@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
    this->setCentralWidget(ui->splitter);
     QString dir = "/";
-
+/////////////////////////////Directory Tree////////////////////////////////
     model = new QFileSystemModel();
     QString filesPath = dir;
     model->setRootPath(dir);
@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeView->setAnimated(false);
     ui->treeView->setSortingEnabled(true);
 
-
+//////////////////////////////////////////////////////////////Shorcuts///////////////////////////
         CtrlC = new QShortcut(this);
         CtrlC->setKey(Qt::ALT + Qt::Key_C);
         connect(CtrlC, SIGNAL(activated()), this, SLOT(slotShortcutCtrlC()));

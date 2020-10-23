@@ -6,28 +6,28 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>913</width>
+    <height>753</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="verticalLayoutWidget">
+   <widget class="QSplitter" name="splitter">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>0</x>
       <y>0</y>
-      <width>381</width>
-      <height>231</height>
+      <width>541</width>
+      <height>421</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QTextEdit" name="textEdit"/>
-     </item>
-    </layout>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <widget class="QTreeView" name="treeView"/>
+    <widget class="QTextEdit" name="textEdit"/>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -35,7 +35,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>913</width>
      <height>22</height>
     </rect>
    </property>
@@ -71,6 +71,12 @@
    <addaction name="actionNew"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
+   <addaction name="separator"/>
+   <addaction name="actionCopy"/>
+   <addaction name="actionPaste"/>
+   <addaction name="actionCut"/>
+   <addaction name="actionUndo"/>
+   <addaction name="actionRedo"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
@@ -105,22 +111,32 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionPrint">
-   <property name="text">
-    <string>Print</string>
-   </property>
-  </action>
   <action name="actionCopy">
+   <property name="icon">
+    <iconset>
+     <normalon>:/imgs/copy.svg</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Copy</string>
    </property>
   </action>
   <action name="actionPaste">
+   <property name="icon">
+    <iconset>
+     <normalon>:/imgs/paste.svg</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Paste</string>
    </property>
   </action>
   <action name="actionCut">
+   <property name="icon">
+    <iconset>
+     <normalon>:/imgs/scissors.svg</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Cut</string>
    </property>
