@@ -25,6 +25,10 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void openFile(const QString &filename);
+
+    void saveFile(const QString &filename);
+
 private slots:
     void on_actionOpen_triggered();
 
@@ -32,7 +36,7 @@ private slots:
 
     void on_actionSave_triggered();
 
-    void on_treeView_doubleClicked(const QModelIndex &index);
+    void on_fileBrowser_doubleClicked(const QModelIndex &index);
 
     void on_actionCopy_triggered();
 
@@ -49,11 +53,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    QString currentFile = "";
+    QString m_currentFile = "";
 
-    QFileSystemModel *model;
-
-    QShortcut *CtrlC;
+    QFileSystemModel *m_fileBrowserModel;
 };
 
 #endif // MAINWINDOW_H

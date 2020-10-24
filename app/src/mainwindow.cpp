@@ -2,42 +2,33 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow) {
+    : QMainWindow(parent), ui(new Ui::MainWindow),
+      m_fileBrowserModel(new QFileSystemModel) {
     ui->setupUi(this);
+
     this->setCentralWidget(ui->splitter);
-    QString dir = "/";
 
-    model = new QFileSystemModel();
-    QString filesPath = dir;
-    model->setRootPath(dir);
-    QStringList filter;
-    filter << "*.*";
-    model->setNameFilters(filter);
-    // model->setNameFilterDisables(false);
-
-    ui->treeView->setModel(model);
-    ui->treeView->setRootIndex(model->index(dir));
-    ui->treeView->setAnimated(false);
-
-    ui->treeView->setSortingEnabled(true);
-
-    CtrlC = new QShortcut(this);
-    CtrlC->setKey(Qt::ALT + Qt::Key_C);
-    connect(CtrlC, SIGNAL(activated()), this, SLOT(slotShortcutCtrlC()));
+    // fileBrowser
+    m_fileBrowserModel->setRootPath(QDir::currentPath());
+    m_fileBrowserModel->setNameFilters(QStringList("*.*"));
+    ui->fileBrowser->setModel(m_fileBrowserModel);
+    ui->fileBrowser->setHeaderHidden(true);
+    for (int i = 1; i < m_fileBrowserModel->columnCount(); i++) {
+        ui->fileBrowser->hideColumn(i);
+    }
 }
 
 MainWindow::~MainWindow() { delete ui; }
 
-void MainWindow::on_actionOpen_triggered() {
-    QString Filename = QFileDialog::getOpenFileName(this, "Open the file");
-    QFile file(Filename);
+void MainWindow::openFile(const QString &filename) {
+    QFile file(filename);
 
     if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, "Warnng",
+        QMessageBox::warning(this, "Warning",
                              "Cannot open file:" + file.errorString());
     } else {
-        currentFile = Filename;
-        setWindowTitle(Filename);
+        m_currentFile = filename;
+        setWindowTitle(filename);
         QTextStream in(&file);
         QString text = in.readAll();
         ui->textEdit->setText(text);
@@ -45,55 +36,76 @@ void MainWindow::on_actionOpen_triggered() {
     }
 }
 
+void MainWindow::saveFile(const QString &filename) {
+    QFile file(filename);
+
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, "Warning",
+                             "Cannot save file:" + file.errorString());
+    } else {
+        m_currentFile = filename;
+        setWindowTitle(filename);
+        QString text = ui->textEdit->toPlainText();
+        QTextStream out(&file);
+        out << text;
+        file.close();
+    }
+}
+
+void MainWindow::on_actionOpen_triggered() {
+    QString filename = QFileDialog::getOpenFileName(this, "Open the file");
+    openFile(filename);
+}
+
 void MainWindow::on_actionNew_triggered() {
-    currentFile.clear();
+    m_currentFile.clear();
     ui->textEdit->setText(QString());
 }
 
 void MainWindow::on_actionSave_triggered() {
-    QString Filename = QFileDialog::getSaveFileName(this, "Save as");
-    QFile file(Filename);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, "warning",
-                             "Cannot save file:" + file.errorString());
-        return;
-    }
-    currentFile = Filename;
-    setWindowTitle(Filename);
-    QTextStream out(&file);
-    QString text = ui->textEdit->toPlainText();
-    out << text;
-    file.close();
+    QString filename = QFileDialog::getSaveFileName(this, "Save as");
+    saveFile(filename);
 }
 
-void MainWindow::on_treeView_doubleClicked(const QModelIndex &index) {
-    // QFileSystemModel *modell = new QFileSystemModel;
-    QFileInfo check_file(model->filePath(index));
-    QString Filename = model->filePath(index);
-    qInfo() << Filename;
-    QFile file(Filename);
-
-    if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, "Warnng",
-                             "Cannot open file:" + file.errorString());
-    } else {
-        currentFile = Filename;
-        setWindowTitle(Filename);
-        QTextStream in(&file);
-        QString text = in.readAll();
-        ui->textEdit->setText(text);
-        file.close();
+void MainWindow::on_fileBrowser_doubleClicked(const QModelIndex &index) {
+    if (QFileInfo(m_fileBrowserModel->filePath(index)).isFile()) {
+        QString filename = m_fileBrowserModel->filePath(index);
+        openFile(filename);
     }
 }
 
-void MainWindow::on_actionCopy_triggered() { ui->textEdit->copy(); }
+void MainWindow::on_actionCopy_triggered() {
+    if (ui->textEdit->hasFocus()) {
+        ui->textEdit->copy();
+    }
+}
 
-void MainWindow::on_actionPaste_triggered() { ui->textEdit->paste(); }
+void MainWindow::on_actionPaste_triggered() {
+    if (ui->textEdit->hasFocus()) {
+        ui->textEdit->paste();
+    }
+}
 
-void MainWindow::on_actionCut_triggered() { ui->textEdit->cut(); }
+void MainWindow::on_actionCut_triggered() {
+    if (ui->textEdit->hasFocus()) {
+        ui->textEdit->cut();
+    }
+}
 
-void MainWindow::on_actionUndo_triggered() { ui->textEdit->undo(); }
+void MainWindow::on_actionUndo_triggered() {
+    if (ui->textEdit->hasFocus()) {
+        ui->textEdit->undo();
+    }
+}
 
-void MainWindow::on_actionRedo_triggered() { ui->textEdit->redo(); }
+void MainWindow::on_actionRedo_triggered() {
+    if (ui->textEdit->hasFocus()) {
+        ui->textEdit->redo();
+    }
+}
 
-void MainWindow::slotShortcutCtrlC() { ui->textEdit->copy(); }
+void MainWindow::slotShortcutCtrlC() {
+    if (ui->textEdit->hasFocus()) {
+        ui->textEdit->copy();
+    }
+}
