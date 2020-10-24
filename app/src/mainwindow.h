@@ -3,24 +3,22 @@
 
 #include <QMainWindow>
 
+#include <QDebug>
 #include <QFile>
-#include<QFileDialog>
-#include<QTextBlock>
-#include<QMessageBox>
-#include<QPrinter>
-#include<QPrintDialog>
-#include <QTextStream>
+#include <QFileDialog>
 #include <QFileSystemModel>
-#include<QDebug>
-#include<QShortcut>
-
+#include <QMessageBox>
+#include <QPrintDialog>
+#include <QPrinter>
+#include <QShortcut>
+#include <QTextBlock>
+#include <QTextStream>
 
 namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
@@ -53,9 +51,9 @@ private:
 
     QString currentFile = "";
 
-    QFileSystemModel*model;
+    QFileSystemModel *model;
 
-    QShortcut       *CtrlC;
+    QShortcut *CtrlC;
 };
 
 #endif // MAINWINDOW_H
