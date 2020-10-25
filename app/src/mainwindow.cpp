@@ -1,13 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include<QListWidget>
+#include<QPushButton>
+#include<QLabel>
+#include <QBoxLayout>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_fileBrowserModel(new QFileSystemModel) {
     ui->setupUi(this);
 
     this->setCentralWidget(ui->splitter);
-
     // fileBrowser
     m_fileBrowserModel->setRootPath(QDir::currentPath());
     m_fileBrowserModel->setNameFilters(QStringList("*.*"));
@@ -16,6 +18,50 @@ MainWindow::MainWindow(QWidget *parent)
     for (int i = 1; i < m_fileBrowserModel->columnCount(); i++) {
         ui->fileBrowser->hideColumn(i);
     }
+    // нужно доделать размещение элементов и сделать центральным виджетом verticalLayout
+    //временно кинул на триггер New добавление будущих вкладок для переключения между файлами
+    QSizePolicy spLeft(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    spLeft.setHorizontalStretch(1);
+    ui->fileBrowser->setSizePolicy(spLeft);
+
+    QSizePolicy spRight(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    spRight.setHorizontalStretch(3);
+    ui->textEdit->setSizePolicy(spRight);
+
+    QSizePolicy spUp(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    spRight.setVerticalStretch(1);
+    ui->listWidget->setSizePolicy(spUp);
+
+    QSizePolicy spDown(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    spDown.setVerticalStretch(9);
+    ui->splitter->setSizePolicy(spDown);
+
+    ShortCuts();
+
+
+}
+
+void MainWindow::ShortCuts() {
+
+    altCopy = new QShortcut(this);
+    altCopy->setKey(Qt::ALT + Qt::Key_C);
+    connect(altCopy, SIGNAL(activated()), this, SLOT(slotShortcutAltCopy()));
+
+    altPaste = new QShortcut(this);
+    altPaste->setKey(Qt::ALT + Qt::Key_W);
+    connect(altPaste, SIGNAL(activated()), this, SLOT(slotShortcutAltPaste()));
+
+    altCut = new QShortcut(this);
+    altCut->setKey(Qt::ALT + Qt::Key_X);
+    connect(altCut, SIGNAL(activated()), this, SLOT(slotShortcutAltCut()));
+
+    altUndo = new QShortcut(this);
+    altUndo->setKey(Qt::ALT + Qt::Key_Z);
+    connect(altUndo, SIGNAL(activated()), this, SLOT(slotShortcutAltUndo()));
+
+    altRedo = new QShortcut(this);
+    altRedo->setKey(Qt::ALT + Qt::Key_Y);
+    connect(altRedo, SIGNAL(activated()), this, SLOT(slotShortcutAltRedo()));
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -60,6 +106,21 @@ void MainWindow::on_actionOpen_triggered() {
 void MainWindow::on_actionNew_triggered() {
     m_currentFile.clear();
     ui->textEdit->setText(QString());
+
+    QWidget* wgt = new QWidget;
+    QLayout* l = new QHBoxLayout;
+    QLayout* v = new QVBoxLayout;
+    QPushButton* btn = new QPushButton( "X" );
+
+    v->addItem(l);
+    v->addWidget( new QLabel("Path of file") );
+   // l->addStretch(); хуй знает почему не работает
+    l->addWidget(btn);
+    l->setSpacing(0);
+    wgt->setLayout( v );
+    QListWidgetItem* item = new QListWidgetItem( ui->listWidget );
+    item->setSizeHint( wgt->sizeHint() );
+    ui->listWidget->setItemWidget( item, wgt );
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -104,8 +165,22 @@ void MainWindow::on_actionRedo_triggered() {
     }
 }
 
-void MainWindow::slotShortcutCtrlC() {
-    if (ui->textEdit->hasFocus()) {
-        ui->textEdit->copy();
-    }
+void MainWindow::slotShortcutAltCopy() {
+    on_actionCopy_triggered();
+}
+
+void MainWindow::slotShortcutAltPaste() {
+    on_actionPaste_triggered();
+}
+
+void MainWindow::slotShortcutAltCut() {
+    on_actionCut_triggered();
+}
+
+void MainWindow::slotShortcutAltUndo(){
+    on_actionUndo_triggered();
+}
+
+void MainWindow::slotShortcutAltRedo(){
+    on_actionRedo_triggered();
 }

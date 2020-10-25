@@ -29,6 +29,8 @@ public:
 
     void saveFile(const QString &filename);
 
+    void MainWindow::ShortCuts();
+
 private slots:
     void on_actionOpen_triggered();
 
@@ -48,7 +50,15 @@ private slots:
 
     void on_actionRedo_triggered();
 
-    void slotShortcutCtrlC();
+    void slotShortcutAltCopy();
+
+    void slotShortcutAltPaste();
+
+    void slotShortcutAltCut();
+
+    void slotShortcutAltUndo();
+
+    void slotShortcutAltRedo();
 
 private:
     Ui::MainWindow *ui;
@@ -56,6 +66,18 @@ private:
     QString m_currentFile = "";
 
     QFileSystemModel *m_fileBrowserModel;
+
+    //ShortCuts
+
+    QShortcut *altCopy;
+
+    QShortcut *altPaste;
+
+    QShortcut *altCut;
+
+    QShortcut *altUndo;
+
+    QShortcut *altRedo;
 };
 
 #endif // MAINWINDOW_H
