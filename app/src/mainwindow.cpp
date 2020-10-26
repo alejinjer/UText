@@ -4,12 +4,12 @@
 #include<QPushButton>
 #include<QLabel>
 #include <QBoxLayout>
+#include <QVBoxLayout>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_fileBrowserModel(new QFileSystemModel) {
     ui->setupUi(this);
-
-    this->setCentralWidget(ui->splitter);
+    this->setCentralWidget(ui->widget);
     // fileBrowser
     m_fileBrowserModel->setRootPath(QDir::currentPath());
     m_fileBrowserModel->setNameFilters(QStringList("*.*"));
@@ -18,8 +18,6 @@ MainWindow::MainWindow(QWidget *parent)
     for (int i = 1; i < m_fileBrowserModel->columnCount(); i++) {
         ui->fileBrowser->hideColumn(i);
     }
-    // нужно доделать размещение элементов и сделать центральным виджетом verticalLayout
-    //временно кинул на триггер New добавление будущих вкладок для переключения между файлами
     QSizePolicy spLeft(QSizePolicy::Preferred, QSizePolicy::Preferred);
     spLeft.setHorizontalStretch(1);
     ui->fileBrowser->setSizePolicy(spLeft);
@@ -30,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QSizePolicy spUp(QSizePolicy::Preferred, QSizePolicy::Preferred);
     spRight.setVerticalStretch(1);
-    ui->listWidget->setSizePolicy(spUp);
+    ui->tabWidget->setSizePolicy(spUp);
 
     QSizePolicy spDown(QSizePolicy::Preferred, QSizePolicy::Preferred);
     spDown.setVerticalStretch(9);
@@ -107,20 +105,19 @@ void MainWindow::on_actionNew_triggered() {
     m_currentFile.clear();
     ui->textEdit->setText(QString());
 
-    QWidget* wgt = new QWidget;
-    QLayout* l = new QHBoxLayout;
-    QLayout* v = new QVBoxLayout;
-    QPushButton* btn = new QPushButton( "X" );
+//    QWidget* wgt = new QWidget;
+//    QLayout* l = new QHBoxLayout;
+//    QLayout* v = new QVBoxLayout;
+//    QPushButton* btn = new QPushButton( "X" );
 
-    v->addItem(l);
-    v->addWidget( new QLabel("Path of file") );
-   // l->addStretch(); хуй знает почему не работает
-    l->addWidget(btn);
-    l->setSpacing(0);
-    wgt->setLayout( v );
-    QListWidgetItem* item = new QListWidgetItem( ui->listWidget );
-    item->setSizeHint( wgt->sizeHint() );
-    ui->listWidget->setItemWidget( item, wgt );
+//    v->addItem(l);
+//    v->addWidget( new QLabel("Path of file") );
+//    l->addWidget(btn);
+//    l->setSpacing(0);
+//    wgt->setLayout( v );
+//    QListWidgetItem* item = new QListWidgetItem( ui->listWidget );
+//    item->setSizeHint( wgt->sizeHint() );
+ //   ui->listWidget->setItemWidget( item, wgt );
 }
 
 void MainWindow::on_actionSave_triggered() {
