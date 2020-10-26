@@ -5,6 +5,7 @@
 #include<QLabel>
 #include <QBoxLayout>
 #include <QVBoxLayout>
+#include<QTabWidget>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_fileBrowserModel(new QFileSystemModel) {
@@ -18,6 +19,14 @@ MainWindow::MainWindow(QWidget *parent)
     for (int i = 1; i < m_fileBrowserModel->columnCount(); i++) {
         ui->fileBrowser->hideColumn(i);
     }
+
+    widgetPosition();
+    ShortCuts();
+
+
+}
+
+void MainWindow::widgetPosition(){
     QSizePolicy spLeft(QSizePolicy::Preferred, QSizePolicy::Preferred);
     spLeft.setHorizontalStretch(1);
     ui->fileBrowser->setSizePolicy(spLeft);
@@ -34,9 +43,8 @@ MainWindow::MainWindow(QWidget *parent)
     spDown.setVerticalStretch(9);
     ui->splitter->setSizePolicy(spDown);
 
-    ShortCuts();
-
-
+    ui->tabWidget->removeTab(1);
+    ui->tabWidget->removeTab(0);
 }
 
 void MainWindow::ShortCuts() {
@@ -104,20 +112,9 @@ void MainWindow::on_actionOpen_triggered() {
 void MainWindow::on_actionNew_triggered() {
     m_currentFile.clear();
     ui->textEdit->setText(QString());
+    QLabel *myLabel = new QLabel("", this);
+    ui->tabWidget->addTab(myLabel, "untitled");
 
-//    QWidget* wgt = new QWidget;
-//    QLayout* l = new QHBoxLayout;
-//    QLayout* v = new QVBoxLayout;
-//    QPushButton* btn = new QPushButton( "X" );
-
-//    v->addItem(l);
-//    v->addWidget( new QLabel("Path of file") );
-//    l->addWidget(btn);
-//    l->setSpacing(0);
-//    wgt->setLayout( v );
-//    QListWidgetItem* item = new QListWidgetItem( ui->listWidget );
-//    item->setSizeHint( wgt->sizeHint() );
- //   ui->listWidget->setItemWidget( item, wgt );
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -180,4 +177,9 @@ void MainWindow::slotShortcutAltUndo(){
 
 void MainWindow::slotShortcutAltRedo(){
     on_actionRedo_triggered();
+}
+
+void MainWindow::on_tabWidget_tabCloseRequested(int index)
+{
+    ui->tabWidget->removeTab(index);
 }

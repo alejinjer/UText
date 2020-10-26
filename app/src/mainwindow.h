@@ -31,6 +31,8 @@ public:
 
     void MainWindow::ShortCuts();
 
+    void MainWindow::widgetPosition();
+
 private slots:
     void on_actionOpen_triggered();
 
@@ -59,6 +61,8 @@ private slots:
     void slotShortcutAltUndo();
 
     void slotShortcutAltRedo();
+
+    void on_tabWidget_tabCloseRequested(int index);
 
 private:
     Ui::MainWindow *ui;
