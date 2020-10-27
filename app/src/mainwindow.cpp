@@ -1,11 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include<QListWidget>
-#include<QPushButton>
-#include<QLabel>
-#include <QBoxLayout>
-#include <QVBoxLayout>
-#include<QTabWidget>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_fileBrowserModel(new QFileSystemModel) {
@@ -19,10 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     for (int i = 1; i < m_fileBrowserModel->columnCount(); i++) {
         ui->fileBrowser->hideColumn(i);
     }
-
     widgetPosition();
     ShortCuts();
-
 
 }
 
@@ -43,8 +35,13 @@ void MainWindow::widgetPosition(){
     spDown.setVerticalStretch(9);
     ui->splitter->setSizePolicy(spDown);
 
-    ui->tabWidget->removeTab(1);
+    ui->tabWidget->removeTab(1); //временный костыль
     ui->tabWidget->removeTab(0);
+    QLabel *myLabel = new QLabel("", this);
+    ui->tabWidget->addTab(myLabel, "untitled");
+    fileTabsData.clear();
+    ui->tabWidget->setTabEnabled(0,true);
+    fileTabsData[0];
 }
 
 void MainWindow::ShortCuts() {
@@ -101,6 +98,7 @@ void MainWindow::saveFile(const QString &filename) {
         QTextStream out(&file);
         out << text;
         file.close();
+        ui->tabWidget->setTabText(currentTab,filename);
     }
 }
 
@@ -110,11 +108,9 @@ void MainWindow::on_actionOpen_triggered() {
 }
 
 void MainWindow::on_actionNew_triggered() {
-    m_currentFile.clear();
-    ui->textEdit->setText(QString());
     QLabel *myLabel = new QLabel("", this);
+    fileTabsData[fileTabsData.size()];
     ui->tabWidget->addTab(myLabel, "untitled");
-
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -161,6 +157,8 @@ void MainWindow::on_actionRedo_triggered() {
 
 void MainWindow::slotShortcutAltCopy() {
     on_actionCopy_triggered();
+    qInfo() << fileTabsData.size();
+    qInfo() << fileTabsData;
 }
 
 void MainWindow::slotShortcutAltPaste() {
@@ -181,5 +179,26 @@ void MainWindow::slotShortcutAltRedo(){
 
 void MainWindow::on_tabWidget_tabCloseRequested(int index)
 {
-    ui->tabWidget->removeTab(index);
+    fileTabsData[currentTab] =ui->textEdit->toPlainText();
+        for(auto it = fileTabsData.find(index); it != fileTabsData.end() - 1; ++it){
+            it.value() = (it + 1).value();
+        }
+        auto it = fileTabsData.end();
+        it--;
+        fileTabsData.erase(it);
+        if(fileTabsData.size() != index)
+            ui->textEdit->setText(fileTabsData[index]);
+        if(fileTabsData.size() == 0)
+             ui->textEdit->setText("");
+        ui->tabWidget->removeTab(index);
+}
+
+void MainWindow::on_tabWidget_currentChanged(int index)
+{
+    if(index > -1) {
+       if(fileTabsData.contains(currentTab))
+            fileTabsData[currentTab] = ui->textEdit->toPlainText();
+       currentTab = index;
+       ui->textEdit->setText(fileTabsData[index]);
+    }
 }

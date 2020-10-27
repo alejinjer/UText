@@ -13,6 +13,11 @@
 #include <QShortcut>
 #include <QTextBlock>
 #include <QTextStream>
+#include<QListWidget>
+#include<QPushButton>
+#include<QLabel>
+#include <QBoxLayout>
+#include<QTabWidget>
 
 namespace Ui {
 class MainWindow;
@@ -64,12 +69,18 @@ private slots:
 
     void on_tabWidget_tabCloseRequested(int index);
 
+    void on_tabWidget_currentChanged(int index);
+
 private:
     Ui::MainWindow *ui;
 
     QString m_currentFile = "";
 
     QFileSystemModel *m_fileBrowserModel;
+
+    QMap <int,QString> fileTabsData;
+
+    int currentTab = 0;
 
     //ShortCuts
 
