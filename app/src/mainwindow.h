@@ -3,21 +3,22 @@
 
 #include <QMainWindow>
 
+#include <QBoxLayout>
 #include <QDebug>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileSystemModel>
+#include <QLabel>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPrintDialog>
 #include <QPrinter>
+#include <QPushButton>
 #include <QShortcut>
+#include <QTabWidget>
 #include <QTextBlock>
+#include <QTextEdit>
 #include <QTextStream>
-#include<QListWidget>
-#include<QPushButton>
-#include<QLabel>
-#include <QBoxLayout>
-#include<QTabWidget>
 
 namespace Ui {
 class MainWindow;
@@ -30,13 +31,15 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void openFile(const QString &filename);
+    void openFile(const QString &filePath);
 
-    void saveFile(const QString &filename);
+    void saveFile(const QString &filePath);
 
     void ShortCuts();
 
     void widgetPosition();
+
+    QTextEdit *addTab(const QString &filename);
 
 private slots:
     void on_actionOpen_triggered();
@@ -69,15 +72,16 @@ private slots:
 
     void on_tabWidget_tabCloseRequested(int index);
 
-
 private:
+    void keyPressEvent(QKeyEvent *ре);
+
     Ui::MainWindow *ui;
 
     QFileSystemModel *m_fileBrowserModel;
 
     int currentTab = 0;
 
-    //ShortCuts
+    // ShortCuts
 
     QShortcut *altCopy;
 
