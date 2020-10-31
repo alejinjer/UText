@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QtAlgorithms>
+#include <QPlainTextEdit>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_fileBrowserModel(new QFileSystemModel) {
@@ -35,7 +37,7 @@ void MainWindow::widgetPosition(){
     spDown.setVerticalStretch(9);
     ui->splitter->setSizePolicy(spDown);
 
-    ui->tabWidget->removeTab(1); //временный костыль
+    ui->tabWidget->removeTab(1);
     ui->tabWidget->removeTab(0);
     QLabel *myLabel = new QLabel("", this);
     ui->tabWidget->addTab(myLabel, "untitled");
@@ -81,7 +83,12 @@ void MainWindow::openFile(const QString &filename) {
         QTextStream in(&file);
         QString text = in.readAll();
         ui->textEdit->setText(text);
-        file.close();
+        QString name = filename.right(filename.size() - filename.lastIndexOf("/") - 1);
+        ui->tabWidget->setTabText(currentTab,name);
+        ui->tabWidget->setTabToolTip(currentTab,filename);
+
+        QLabel * path = qobject_cast<QLabel *>(ui->tabWidget->currentWidget());
+        path->setText(filename);
     }
 }
 
@@ -98,7 +105,12 @@ void MainWindow::saveFile(const QString &filename) {
         QTextStream out(&file);
         out << text;
         file.close();
-        ui->tabWidget->setTabText(currentTab,filename);
+        QString name = filename.right(filename.size() - filename.lastIndexOf("/") - 1);
+        ui->tabWidget->setTabText(currentTab,name);
+        ui->tabWidget->setTabToolTip(currentTab,filename);
+
+        QLabel * path = qobject_cast<QLabel *>(ui->tabWidget->currentWidget());
+        path->setText(filename);
     }
 }
 
@@ -111,6 +123,7 @@ void MainWindow::on_actionNew_triggered() {
     QLabel *myLabel = new QLabel("", this);
     fileTabsData[fileTabsData.size()];
     ui->tabWidget->addTab(myLabel, "untitled");
+     ui->textEdit->setEnabled(1);
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -128,6 +141,7 @@ void MainWindow::on_fileBrowser_doubleClicked(const QModelIndex &index) {
 void MainWindow::on_actionCopy_triggered() {
     if (ui->textEdit->hasFocus()) {
         ui->textEdit->copy();
+
     }
 }
 
@@ -157,8 +171,6 @@ void MainWindow::on_actionRedo_triggered() {
 
 void MainWindow::slotShortcutAltCopy() {
     on_actionCopy_triggered();
-    qInfo() << fileTabsData.size();
-    qInfo() << fileTabsData;
 }
 
 void MainWindow::slotShortcutAltPaste() {
@@ -188,8 +200,10 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index)
         fileTabsData.erase(it);
         if(fileTabsData.size() != index)
             ui->textEdit->setText(fileTabsData[index]);
-        if(fileTabsData.size() == 0)
+        if(fileTabsData.size() == 0) {
              ui->textEdit->setText("");
+             ui->textEdit->setEnabled(0);
+        }
         ui->tabWidget->removeTab(index);
 }
 
@@ -202,3 +216,4 @@ void MainWindow::on_tabWidget_currentChanged(int index)
        ui->textEdit->setText(fileTabsData[index]);
     }
 }
+
