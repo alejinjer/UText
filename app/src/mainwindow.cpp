@@ -20,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::widgetPosition() {
-
     QSizePolicy spLeft(QSizePolicy::Preferred, QSizePolicy::Preferred);
     spLeft.setHorizontalStretch(1);
     ui->fileBrowser->setSizePolicy(spLeft);
@@ -34,8 +33,17 @@ void MainWindow::widgetPosition() {
     qInfo() << ui->tabWidget;
 }
 
-void MainWindow::ShortCuts() {
+QTextEdit *MainWindow::addTab(const QString &filename) {
+    QTextEdit *newTab = new QTextEdit();
 
+    newTab->setToolTip(filename);
+    ui->tabWidget->addTab(newTab, filename);
+    ui->tabWidget->setCurrentWidget(newTab);
+
+    return newTab;
+}
+
+void MainWindow::ShortCuts() {
     altCopy = new QShortcut(this);
     altCopy->setKey(Qt::ALT + Qt::Key_C);
     connect(altCopy, SIGNAL(activated()), this, SLOT(slotShortcutAltCopy()));
@@ -59,64 +67,66 @@ void MainWindow::ShortCuts() {
 
 MainWindow::~MainWindow() { delete ui; }
 
-void MainWindow::openFile(const QString &filename) {
-    QFile file(filename);
+void MainWindow::openFile(const QString &filePath) {
+    QFile file(filePath);
 
     if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
         QMessageBox::warning(this, "Warning",
                              "Cannot open file:" + file.errorString());
     } else {
-        setWindowTitle(filename);
-        QTextStream in(&file);
-        QString text = in.readAll();
-        QString name =
-            filename.right(filename.size() - filename.lastIndexOf("/") - 1);
-        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(), name);
-        ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(), filename);
-        QTextEdit *mytextedit =
-            qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
-        mytextedit->setText(text);
+        QString fileText = file.readAll();
+        QString fileName =
+            filePath.right(filePath.size() - filePath.lastIndexOf("/") - 1);
+        auto newTab = addTab(fileName);
+
+        newTab->setText(fileText);
     }
 }
 
-void MainWindow::saveFile(const QString &filename) {
-    QFile file(filename);
+void MainWindow::saveFile(const QString &filePath) {
+    if (filePath.isNull() || filePath.isEmpty()) {
+        return;
+    }
+    QFile file(filePath);
 
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, "Warning",
                              "Cannot save file:" + file.errorString());
     } else {
-        setWindowTitle(filename);
-        QTextEdit *myText =
+        QTextEdit *currentTab =
             qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
-        QString text = myText->toPlainText();
+        QString fileText = currentTab->toPlainText();
         QTextStream out(&file);
-        out << text;
+
+        out << fileText;
         file.close();
-        QString name =
-            filename.right(filename.size() - filename.lastIndexOf("/") - 1);
-        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(), name);
-        ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(), filename);
     }
 }
 
 void MainWindow::on_actionOpen_triggered() {
     QString filename = QFileDialog::getOpenFileName(this, "Open the file");
-    openFile(filename);
+
+    if (!filename.isEmpty()) {
+        openFile(filename);
+    }
 }
 
-void MainWindow::on_actionNew_triggered() {
-    QTextEdit *mytext = new QTextEdit();
-    ui->tabWidget->addTab(mytext, "untitled");
-}
+void MainWindow::on_actionNew_triggered() { addTab("untitled"); }
 
 void MainWindow::on_actionSave_triggered() {
-    if (ui->tabWidget->tabText(ui->tabWidget->currentIndex()) == "untitled") {
+    QTextEdit *currentTab =
+        qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
+
+    if (!currentTab) {
+        return;
+    }
+
+    if (currentTab->toolTip() == "untitled") {
         QString filename = QFileDialog::getSaveFileName(this, "Save as");
         saveFile(filename);
     } else {
-        qInfo() << ui->tabWidget->tabToolTip(ui->tabWidget->currentIndex());
-        saveFile(ui->tabWidget->tabToolTip(ui->tabWidget->currentIndex()));
+        qInfo() << currentTab->toolTip();
+        saveFile(currentTab->toolTip());
     }
 }
 
@@ -179,4 +189,24 @@ void MainWindow::slotShortcutAltRedo() { on_actionRedo_triggered(); }
 
 void MainWindow::on_tabWidget_tabCloseRequested(int index) {
     ui->tabWidget->removeTab(index);
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *pe) {
+    auto currentTab = ui->tabWidget->currentWidget();
+
+    if (pe->modifiers() & Qt::CTRL) {
+        switch (pe->key()) {
+        case Qt::Key_W:
+            ui->tabWidget->removeTab(ui->tabWidget->currentIndex());
+            break;
+        case Qt::Key_S:
+            on_actionSave_triggered();
+            break;
+        case Qt::Key_T:
+            on_actionNew_triggered();
+            break;
+        default:
+            break;
+        }
+    }
 }
