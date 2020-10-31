@@ -14,52 +14,43 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="widget" native="true">
+   <widget class="QSplitter" name="splitter">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>80</y>
-      <width>530</width>
-      <height>210</height>
+      <x>210</x>
+      <y>90</y>
+      <width>420</width>
+      <height>192</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <property name="documentMode">
-        <bool>false</bool>
-       </property>
-       <property name="tabsClosable">
-        <bool>true</bool>
-       </property>
-       <property name="tabBarAutoHide">
-        <bool>false</bool>
-       </property>
-       <widget class="QWidget" name="tab">
-        <attribute name="title">
-         <string>Tab 1</string>
-        </attribute>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>Tab 2</string>
-        </attribute>
-       </widget>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSplitter" name="splitter">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <widget class="QTreeView" name="fileBrowser"/>
-       <widget class="QTextEdit" name="textEdit"/>
-      </widget>
-     </item>
-    </layout>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <widget class="QTreeView" name="fileBrowser"/>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <property name="documentMode">
+      <bool>false</bool>
+     </property>
+     <property name="tabsClosable">
+      <bool>true</bool>
+     </property>
+     <property name="tabBarAutoHide">
+      <bool>false</bool>
+     </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Tab 1</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Tab 2</string>
+      </attribute>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -68,7 +59,7 @@
      <x>0</x>
      <y>0</y>
      <width>913</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

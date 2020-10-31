@@ -34,9 +34,9 @@ public:
 
     void saveFile(const QString &filename);
 
-    void MainWindow::ShortCuts();
+    void ShortCuts();
 
-    void MainWindow::widgetPosition();
+    void widgetPosition();
 
 private slots:
     void on_actionOpen_triggered();
@@ -69,17 +69,11 @@ private slots:
 
     void on_tabWidget_tabCloseRequested(int index);
 
-    void on_tabWidget_currentChanged(int index);
-
 
 private:
     Ui::MainWindow *ui;
 
-    QString m_currentFile = "";
-
     QFileSystemModel *m_fileBrowserModel;
-
-    QMap <int,QString> fileTabsData;
 
     int currentTab = 0;
 
