@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 #include <QPlainTextEdit>
 #include <QtAlgorithms>
+
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_fileBrowserModel(new QFileSystemModel) {
@@ -78,7 +81,7 @@ void MainWindow::openFile(const QString &filePath) {
         QString fileName =
             filePath.right(filePath.size() - filePath.lastIndexOf("/") - 1);
         auto newTab = addTab(fileName);
-
+        ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(), filePath);
         newTab->setText(fileText);
     }
 }
@@ -96,6 +99,10 @@ void MainWindow::saveFile(const QString &filePath) {
         QTextEdit *currentTab =
             qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
         QString fileText = currentTab->toPlainText();
+        QString name =
+                   filePath.right(filePath.size() - filePath.lastIndexOf("/") - 1);
+        ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(), filePath);
+        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(), name);
         QTextStream out(&file);
 
         out << fileText;
@@ -208,5 +215,39 @@ void MainWindow::keyPressEvent(QKeyEvent *pe) {
         default:
             break;
         }
+    }
+}
+
+void MainWindow::on_actionfind_and_replace_triggered()
+{
+    if(ui->tabWidget->count() > 0) {
+    QString find;
+    QString replace;
+    QDialog dialog(this);
+    QFormLayout form(&dialog);
+
+    QLineEdit *findEdit = new QLineEdit(&dialog);
+    QString label = QString("Find");
+    form.addRow(label, findEdit);
+
+    QLineEdit *replaceEdit = new QLineEdit(&dialog);
+    label = QString("Replace");
+    form.addRow(label, replaceEdit);
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+                               Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    QObject::connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    QObject::connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+
+    if (dialog.exec() == QDialog::Accepted) {
+        find = findEdit->text();
+        replace = replaceEdit->text();
+    }
+
+    QTextEdit *myText =
+        qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
+    QString text = myText->toPlainText();
+    text.replace(find, replace);
+    myText->setText(text);
     }
 }

@@ -19,6 +19,9 @@
 #include <QTextBlock>
 #include <QTextEdit>
 #include <QTextStream>
+#include <QFormLayout>
+#include <QDialogButtonBox>
+#include <QLineEdit>
 
 namespace Ui {
 class MainWindow;
@@ -71,6 +74,8 @@ private slots:
     void slotShortcutAltRedo();
 
     void on_tabWidget_tabCloseRequested(int index);
+
+    void on_actionfind_and_replace_triggered();
 
 private:
     void keyPressEvent(QKeyEvent *ре);
