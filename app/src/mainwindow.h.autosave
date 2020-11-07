@@ -49,7 +49,7 @@ public:
 
     void createFolder(const QPoint &pos);
 
-    void MainWindow::createFile(const QPoint &pos);
+    void createFile(const QPoint &pos);
 
 private slots:
     void on_actionOpen_triggered();

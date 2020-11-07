@@ -70,6 +70,7 @@
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionExit"/>
+    <addaction name="actionOpen_directory"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -102,6 +103,7 @@
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
    <addaction name="actionfind_and_replace"/>
+   <addaction name="actionOpen_directory"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
@@ -179,6 +181,11 @@
   <action name="actionfind_and_replace">
    <property name="text">
     <string>find and replace</string>
+   </property>
+  </action>
+  <action name="actionOpen_directory">
+   <property name="text">
+    <string>Open directory</string>
    </property>
   </action>
  </widget>

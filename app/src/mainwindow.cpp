@@ -1,9 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QDirModel>
+#include <QInputDialog>
 #include <QPlainTextEdit>
+#include <QTextDocument>
+#include <QTreeWidgetItem>
 #include <QtAlgorithms>
-
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
@@ -20,6 +22,9 @@ MainWindow::MainWindow(QWidget *parent)
     }
     widgetPosition();
     ShortCuts();
+    ui->fileBrowser->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->fileBrowser, SIGNAL(customContextMenuRequested(QPoint)), this,
+            SLOT(treeCustomMenu(QPoint)));
 }
 
 void MainWindow::widgetPosition() {
@@ -33,7 +38,6 @@ void MainWindow::widgetPosition() {
 
     ui->tabWidget->removeTab(1);
     ui->tabWidget->removeTab(0);
-    qInfo() << ui->tabWidget;
 }
 
 QTextEdit *MainWindow::addTab(const QString &filename) {
@@ -71,6 +75,7 @@ void MainWindow::ShortCuts() {
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::openFile(const QString &filePath) {
+    qInfo() << filePath;
     QFile file(filePath);
 
     if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
@@ -90,6 +95,7 @@ void MainWindow::saveFile(const QString &filePath) {
     if (filePath.isNull() || filePath.isEmpty()) {
         return;
     }
+    qInfo() << filePath;
     QFile file(filePath);
 
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -100,7 +106,7 @@ void MainWindow::saveFile(const QString &filePath) {
             qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
         QString fileText = currentTab->toPlainText();
         QString name =
-                   filePath.right(filePath.size() - filePath.lastIndexOf("/") - 1);
+            filePath.right(filePath.size() - filePath.lastIndexOf("/") - 1);
         ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(), filePath);
         ui->tabWidget->setTabText(ui->tabWidget->currentIndex(), name);
         QTextStream out(&file);
@@ -128,12 +134,11 @@ void MainWindow::on_actionSave_triggered() {
         return;
     }
 
-    if (currentTab->toolTip() == "untitled") {
+    if (ui->tabWidget->tabToolTip(ui->tabWidget->currentIndex()) == "") {
         QString filename = QFileDialog::getSaveFileName(this, "Save as");
         saveFile(filename);
     } else {
-        qInfo() << currentTab->toolTip();
-        saveFile(currentTab->toolTip());
+        saveFile(ui->tabWidget->tabToolTip(ui->tabWidget->currentIndex()));
     }
 }
 
@@ -218,36 +223,84 @@ void MainWindow::keyPressEvent(QKeyEvent *pe) {
     }
 }
 
-void MainWindow::on_actionfind_and_replace_triggered()
-{
-    if(ui->tabWidget->count() > 0) {
-    QString find;
-    QString replace;
-    QDialog dialog(this);
-    QFormLayout form(&dialog);
+void MainWindow::on_actionfind_and_replace_triggered() {
+    if (ui->tabWidget->count() > 0) {
+        QString find;
+        QString replace;
+        QDialog dialog(this);
+        QFormLayout form(&dialog);
 
-    QLineEdit *findEdit = new QLineEdit(&dialog);
-    QString label = QString("Find");
-    form.addRow(label, findEdit);
+        QLineEdit *findEdit = new QLineEdit(&dialog);
+        QString label = QString("Find");
+        form.addRow(label, findEdit);
 
-    QLineEdit *replaceEdit = new QLineEdit(&dialog);
-    label = QString("Replace");
-    form.addRow(label, replaceEdit);
-    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
-                               Qt::Horizontal, &dialog);
-    form.addRow(&buttonBox);
-    QObject::connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
-    QObject::connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+        QLineEdit *replaceEdit = new QLineEdit(&dialog);
+        label = QString("Replace");
+        form.addRow(label, replaceEdit);
+        QDialogButtonBox buttonBox(QDialogButtonBox::Ok |
+                                       QDialogButtonBox::Cancel,
+                                   Qt::Horizontal, &dialog);
+        form.addRow(&buttonBox);
+        QObject::connect(&buttonBox, SIGNAL(accepted()), &dialog,
+                         SLOT(accept()));
+        QObject::connect(&buttonBox, SIGNAL(rejected()), &dialog,
+                         SLOT(reject()));
 
-    if (dialog.exec() == QDialog::Accepted) {
-        find = findEdit->text();
-        replace = replaceEdit->text();
-    }
+        if (dialog.exec() == QDialog::Accepted) {
+            find = findEdit->text();
+            replace = replaceEdit->text();
+        }
 
-    QTextEdit *myText =
-        qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
-    QString text = myText->toPlainText();
-    text.replace(find, replace);
-    myText->setText(text);
+        QTextEdit *currentTab =
+            qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
+        QString text = currentTab->toPlainText();
+        text.replace(find, replace);
+        currentTab->setText(text);
     }
 }
+
+void MainWindow::treeCustomMenu(const QPoint &pos) {
+    if (m_fileBrowserModel->isDir(ui->fileBrowser->indexAt(
+            pos))) { //проверка нажал ли пользователь на директорию
+        QMenu m;
+        m.addAction("New Folder");
+        m.addAction("New File");
+        QAction *selected = m.exec(mapToGlobal(pos));
+        if (selected != nullptr) {
+            if (selected->text() == "New Folder") {
+                createFolder(pos);
+            } else if (selected->text() == "New File") {
+                createFile(pos);
+            }
+        }
+    }
+}
+
+void MainWindow::createFolder(const QPoint &pos) {
+    bool ok;
+    QString text = QInputDialog::getText(
+        this, tr("QInputDialog::getText()"), tr("Directory name:"),
+        QLineEdit::Normal, QDir::home().dirName(), &ok);
+    if (ok && !text.isEmpty()) {
+        QDir(m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos)))
+            .mkdir(text);
+    }
+}
+
+void MainWindow::createFile(const QPoint &pos) {
+    bool ok;
+    QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+                                         tr("File name:"), QLineEdit::Normal,
+                                         QDir::home().dirName(), &ok);
+    if (ok && !text.isEmpty()) {
+        QFile file(m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos)) +
+                   "/" + text);
+
+        if (!file.open(QFile::WriteOnly | QFile::Text)) {
+            QMessageBox::warning(this, "Warning",
+                                 "Cannot save file:" + file.errorString());
+        } else
+            file.close();
+    }
+}
+void MainWindow::on_actionOpen_directory_triggered() {}
