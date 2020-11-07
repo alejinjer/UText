@@ -32,12 +32,12 @@ void MainWindow::widgetPosition() {
     spLeft.setHorizontalStretch(1);
     ui->fileBrowser->setSizePolicy(spLeft);
 
-    QSizePolicy spRight(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    spRight.setHorizontalStretch(7);
-    ui->tabWidget->setSizePolicy(spRight);
-
     ui->tabWidget->removeTab(1);
     ui->tabWidget->removeTab(0);
+
+    QSizePolicy spRight(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    spRight.setHorizontalStretch(130);
+    ui->tabWidget->setSizePolicy(spRight);
 }
 
 QTextEdit *MainWindow::addTab(const QString &filename) {
@@ -75,7 +75,6 @@ void MainWindow::ShortCuts() {
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::openFile(const QString &filePath) {
-    qInfo() << filePath;
     QFile file(filePath);
 
     if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
@@ -95,7 +94,6 @@ void MainWindow::saveFile(const QString &filePath) {
     if (filePath.isNull() || filePath.isEmpty()) {
         return;
     }
-    qInfo() << filePath;
     QFile file(filePath);
 
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
