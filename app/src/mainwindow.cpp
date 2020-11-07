@@ -202,7 +202,6 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *pe) {
-    auto currentTab = ui->tabWidget->currentWidget();
 
     if (pe->modifiers() & Qt::CTRL) {
         switch (pe->key()) {
@@ -258,17 +257,37 @@ void MainWindow::on_actionfind_and_replace_triggered() {
 }
 
 void MainWindow::treeCustomMenu(const QPoint &pos) {
-    if (m_fileBrowserModel->isDir(ui->fileBrowser->indexAt(
-            pos))) { //проверка нажал ли пользователь на директорию
-        QMenu m;
-        m.addAction("New Folder");
-        m.addAction("New File");
-        QAction *selected = m.exec(mapToGlobal(pos));
-        if (selected != nullptr) {
-            if (selected->text() == "New Folder") {
-                createFolder(pos);
-            } else if (selected->text() == "New File") {
-                createFile(pos);
+    if ((ui->fileBrowser->indexAt(pos)).isValid()) {
+        if (m_fileBrowserModel->isDir(ui->fileBrowser->indexAt(pos))) {
+            //проверка нажал ли пользователь на директорию
+            QMenu m;
+            m.addAction("New Folder");
+            m.addAction("New File");
+            m.addAction("Rename");
+            m.addAction("Delete");
+            QAction *selected = m.exec(mapToGlobal(pos));
+            if (selected != nullptr) {
+                if (selected->text() == "New Folder") {
+                    createFolder(pos);
+                } else if (selected->text() == "New File") {
+                    createFile(pos);
+                } else if (selected->text() == "Rename") {
+                    renameFolder(pos);
+                } else if (selected->text() == "Delete") {
+                    deleteFolder(pos);
+                }
+            }
+        } else {
+            QMenu m;
+            m.addAction("Rename");
+            m.addAction("Delete");
+            QAction *selected = m.exec(mapToGlobal(pos));
+            if (selected != nullptr) {
+                if (selected->text() == "Rename") {
+                    renameFile(pos);
+                } else if (selected->text() == "Delete") {
+                    deleteFile(pos);
+                }
             }
         }
     }
@@ -280,8 +299,10 @@ void MainWindow::createFolder(const QPoint &pos) {
         this, tr("QInputDialog::getText()"), tr("Directory name:"),
         QLineEdit::Normal, QDir::home().dirName(), &ok);
     if (ok && !text.isEmpty()) {
-        QDir(m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos)))
-            .mkdir(text);
+        if (!QDir(m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos)))
+                 .mkdir(text)) {
+            QMessageBox::warning(this, "Warning", "Cannot create folder");
+        }
     }
 }
 
@@ -299,6 +320,82 @@ void MainWindow::createFile(const QPoint &pos) {
                                  "Cannot save file:" + file.errorString());
         } else
             file.close();
+    }
+}
+bool renameDir(QDir &dir, const QString &newName) {
+    auto src = QDir::cleanPath(dir.filePath("."));
+    auto dst = QDir::cleanPath(dir.filePath(
+        QStringLiteral("..%1%2").arg(QDir::separator()).arg(newName)));
+    auto rc = QFile::rename(src, dst);
+    if (rc)
+        dir.setPath(dst);
+    return rc;
+}
+
+void MainWindow::renameFolder(const QPoint &pos) {
+    bool ok;
+    QString text = QInputDialog::getText(
+        this, tr("QInputDialog::getText()"), tr(" New directory name:"),
+        QLineEdit::Normal, QDir::home().dirName(), &ok);
+    if (ok && !text.isEmpty()) {
+        QDir dir(m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos)));
+        renameDir(dir, text);
+    }
+}
+
+void MainWindow::renameFile(const QPoint &pos) {
+    bool ok;
+    QString text = QInputDialog::getText(
+        this, tr("QInputDialog::getText()"), tr(" New file name:"),
+        QLineEdit::Normal, QDir::home().dirName(), &ok);
+    if (ok && !text.isEmpty()) {
+        if (!QFile::rename(
+                m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos)),
+                m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos))
+                        .left(m_fileBrowserModel
+                                  ->filePath(ui->fileBrowser->indexAt(pos))
+                                  .size() -
+                              m_fileBrowserModel
+                                  ->fileName(ui->fileBrowser->indexAt(pos))
+                                  .size()) +
+                    "/" + text)) {
+            QMessageBox::warning(this, "Warning", "Cannot rename file");
+        }
+    }
+}
+
+void MainWindow::deleteFile(const QPoint &pos) {
+    QDialog dialog(this);
+    QFormLayout form(&dialog);
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+                               Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    QObject::connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    QObject::connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    if (dialog.exec() == QDialog::Accepted) {
+        QFile file(m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos)));
+        if (!file.remove()) {
+            QMessageBox::warning(this, "Warning",
+                                 "Cannot delete file:" + file.errorString());
+        }
+    }
+}
+
+void MainWindow::deleteFolder(const QPoint &pos) {
+    QDialog dialog(this);
+    QFormLayout form(&dialog);
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+                               Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    QObject::connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    QObject::connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    if (dialog.exec() == QDialog::Accepted) {
+        QDir dir;
+        if (!QDir(m_fileBrowserModel->filePath(ui->fileBrowser->indexAt(pos)))
+                 .rmpath(m_fileBrowserModel->filePath(
+                     ui->fileBrowser->indexAt(pos)))) {
+            QMessageBox::warning(this, "Warning", "Cannot delete folder");
+        }
     }
 }
 void MainWindow::on_actionOpen_directory_triggered() {}

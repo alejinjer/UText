@@ -51,6 +51,14 @@ public:
 
     void createFile(const QPoint &pos);
 
+    void deleteFolder(const QPoint &pos);
+
+    void renameFolder(const QPoint &pos);
+
+    void deleteFile(const QPoint &pos);
+
+    void renameFile(const QPoint &pos);
+
 private slots:
     void on_actionOpen_triggered();
 
