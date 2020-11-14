@@ -141,6 +141,7 @@ void MainWindow::on_actionSave_triggered() {
 }
 
 void MainWindow::on_fileBrowser_doubleClicked(const QModelIndex &index) {
+    ui->fileBrowser->resizeColumnToContents(0);
     if (QFileInfo(m_fileBrowserModel->filePath(index)).isFile()) {
         QString filename = m_fileBrowserModel->filePath(index);
         openFile(filename);
@@ -148,6 +149,9 @@ void MainWindow::on_fileBrowser_doubleClicked(const QModelIndex &index) {
 }
 
 void MainWindow::on_actionCopy_triggered() {
+    if (!ui->tabWidget->currentWidget()) {
+        return;
+    }
     QTextEdit *myText =
         qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
     if (myText->hasFocus()) {
@@ -156,6 +160,9 @@ void MainWindow::on_actionCopy_triggered() {
 }
 
 void MainWindow::on_actionPaste_triggered() {
+    if (!ui->tabWidget->currentWidget()) {
+        return;
+    }
     QTextEdit *myText =
         qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
     if (myText->hasFocus()) {
@@ -164,6 +171,9 @@ void MainWindow::on_actionPaste_triggered() {
 }
 
 void MainWindow::on_actionCut_triggered() {
+    if (!ui->tabWidget->currentWidget()) {
+        return;
+    }
     QTextEdit *myText =
         qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
     if (myText->hasFocus()) {
@@ -172,6 +182,9 @@ void MainWindow::on_actionCut_triggered() {
 }
 
 void MainWindow::on_actionUndo_triggered() {
+    if (!ui->tabWidget->currentWidget()) {
+        return;
+    }
     QTextEdit *myText =
         qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
     if (myText->hasFocus()) {
@@ -180,6 +193,9 @@ void MainWindow::on_actionUndo_triggered() {
 }
 
 void MainWindow::on_actionRedo_triggered() {
+    if (!ui->tabWidget->currentWidget()) {
+        return;
+    }
     QTextEdit *myText =
         qobject_cast<QTextEdit *>(ui->tabWidget->currentWidget());
     if (myText->hasFocus()) {
@@ -265,6 +281,7 @@ void MainWindow::treeCustomMenu(const QPoint &pos) {
             m.addAction("New File");
             m.addAction("Rename");
             m.addAction("Delete");
+            m.addAction("Collapse all");
             QAction *selected = m.exec(mapToGlobal(pos));
             if (selected != nullptr) {
                 if (selected->text() == "New Folder") {
@@ -275,6 +292,8 @@ void MainWindow::treeCustomMenu(const QPoint &pos) {
                     renameFolder(pos);
                 } else if (selected->text() == "Delete") {
                     deleteFolder(pos);
+                } else if (selected->text() == "Collapse all") {
+                    ui->fileBrowser->collapseAll();
                 }
             }
         } else {
@@ -398,4 +417,17 @@ void MainWindow::deleteFolder(const QPoint &pos) {
         }
     }
 }
-void MainWindow::on_actionOpen_directory_triggered() {}
+
+void MainWindow::on_actionOpen_directory_triggered() {
+    QString dirname =
+        QFileDialog::getExistingDirectory(this, "Open the directory");
+    if (!dirname.isEmpty()) {
+        ui->fileBrowser->scrollTo(m_fileBrowserModel->index(dirname));
+        ui->fileBrowser->selectionModel()->clearSelection();
+        ui->fileBrowser->selectionModel()->select(
+            m_fileBrowserModel->index(dirname),
+            QItemSelectionModel::SelectionFlag::Select);
+        ui->fileBrowser->resizeColumnToContents(0);
+        ui->fileBrowser->expand(m_fileBrowserModel->index(dirname));
+    }
+}
